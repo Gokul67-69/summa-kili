@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regal Carnival - Family Feud & Green Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: radial-gradient(circle at top, #4b0000, #1a0000);
+    color: gold;
+    overflow-x: hidden;
+}
+
+h1, h2 {
+    font-family: 'Cinzel', serif;
+    text-align: center;
+}
+
+.hero {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.title {
+    font-size: 3rem;
+    text-shadow: 0 0 20px gold;
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 0 10px gold; }
+    to { text-shadow: 0 0 30px orange; }
+}
+
+.section {
+    margin: 40px auto;
+    width: 90%;
+    max-width: 800px;
+    background: rgba(0,0,0,0.6);
+    padding: 20px;
+    border-radius: 20px;
+    border: 2px solid gold;
+    box-shadow: 0 0 20px rgba(255,215,0,0.6);
+}
+
+button {
+    background: gold;
+    color: black;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: orange;
+    transform: scale(1.1);
+}
+
+.hidden {
+    display: none;
+}
+
+.contact {
+    text-align: center;
+    margin-top: 20px;
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+    <h1 class="title">👑 Regal Carnival 🎪</h1>
+    <h2>Family Feud & Green Screen Event</h2>
+    <button onclick="toggleMusic()">🎶 Toggle Carnival Music</button>
+</div>
+
+<div class="section">
+    <h2>🎭 Family Feud Rules</h2>
+    <button onclick="toggleSection('ff')">View Rules</button>
+    <div id="ff" class="hidden">
+        <ul>
+            <li>Two teams of 4 players each.</li>
+            <li>Teams decide player order before start.</li>
+            <li>Each round: Face-Off between 1 player per team.</li>
+            <li>3 survey questions per face-off.</li>
+            <li>Points based on survey popularity.</li>
+            <li>Highest total score wins.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="section">
+    <h2>🎬 Green Screen Rules</h2>
+    <button onclick="toggleSection('gs')">View Rules</button>
+    <div id="gs" class="hidden">
+        <ul>
+            <li>Each member participates individually.</li>
+            <li>Scores are added for team total.</li>
+            <li>Participants are blindfolded.</li>
+            <li>Muted clip plays in background.</li>
+            <li>Judges provide clues.</li>
+            <li>3 minutes per participant.</li>
+            <li>Judges’ decisions are final.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="section contact">
+    <h2>📞 Points of Contact</h2>
+    <p><strong>Malini D</strong> – 9500512512</p>
+    <p><strong>Sowmiya D</strong> – 9597593013</p>
+</div>
+
+<audio id="bgMusic" loop>
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7b6f0f2e90.mp3?filename=circus-theme-110299.mp3">
+</audio>
+
+<audio id="clickSound">
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_8a4f85e51d.mp3?filename=click-124467.mp3">
+</audio>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+function toggleSection(id) {
+    document.getElementById("clickSound").play();
+    document.getElementById(id).classList.toggle("hidden");
+}
+
+function toggleMusic() {
+    let music = document.getElementById("bgMusic");
+    if (music.paused) {
+        music.play();
+    } else {
+        music.pause();
+    }
+}
+
+/* 3D Crown Animation */
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({alpha:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const geometry = new THREE.TorusKnotGeometry(3, 1, 100, 16);
+const material = new THREE.MeshStandardMaterial({color: 0xffd700});
+const crown = new THREE.Mesh(geometry, material);
+scene.add(crown);
+
+const light = new THREE.PointLight(0xffffff, 1);
+light.position.set(10,10,10);
+scene.add(light);
+
+camera.position.z = 15;
+
+function animate() {
+    requestAnimationFrame(animate);
+    crown.rotation.x += 0.01;
+    crown.rotation.y += 0.01;
+    renderer.render(scene, camera);
+}
+animate();
+</script>
+
+</body>
+</html>

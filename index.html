@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tri-Wizard Tournament  - Family Feud & Green Screen</title>
+<title>Triwizard Tournament - Family Feud & Green Screen</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -90,63 +90,6 @@ canvas.three-canvas {
   margin-top: 6px;
   opacity: 0.85;
 }
-
-/* ── MUSIC CONTROLS ── */
-.music-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin: 18px auto;
-  z-index: 2;
-  position: relative;
-}
-
-.music-btn {
-  background: linear-gradient(135deg, #FFD700, #B8860B);
-  color: #1a0008;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 40px;
-  cursor: pointer;
-  font-family: 'Cinzel Decorative', cursive;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  transition: all 0.3s;
-  box-shadow: 0 0 20px rgba(255,215,0,0.4);
-}
-
-.music-btn:hover {
-  background: linear-gradient(135deg, #fff59d, #FFD700);
-  transform: scale(1.07);
-  box-shadow: 0 0 35px rgba(255,215,0,0.7);
-}
-
-.equalizer {
-  display: flex;
-  gap: 3px;
-  align-items: flex-end;
-  height: 24px;
-}
-.eq-bar {
-  width: 4px;
-  background: var(--gold);
-  border-radius: 2px;
-  animation: eqAnim 0.6s ease-in-out infinite alternate;
-  transform-origin: bottom;
-}
-.eq-bar:nth-child(1) { height: 10px; animation-delay: 0s; }
-.eq-bar:nth-child(2) { height: 18px; animation-delay: 0.1s; }
-.eq-bar:nth-child(3) { height: 12px; animation-delay: 0.2s; }
-.eq-bar:nth-child(4) { height: 22px; animation-delay: 0.15s; }
-.eq-bar:nth-child(5) { height: 8px;  animation-delay: 0.05s; }
-
-@keyframes eqAnim {
-  from { transform: scaleY(0.3); }
-  to   { transform: scaleY(1); }
-}
-.equalizer.paused .eq-bar { animation-play-state: paused; transform: scaleY(0.3); }
 
 /* ── DECORATIVE DIVIDER ── */
 .divider {
@@ -307,21 +250,12 @@ footer {
     <canvas id="threeCanvas"></canvas>
   </div>
 
-  <h1 class="title">Tri-Wizard Tournament</h1>
+  <h1 class="title">Triwizard Tournament</h1>
   <p class="subtitle">Family Feud &amp; Green Screen</p>
 
   <div class="divider">✦ ✦ ✦</div>
 
-  <div class="music-bar">
-    <button class="music-btn" onclick="toggleMusic()" id="musicBtn">▶ Play Music</button>
-    <div class="equalizer paused" id="eq">
-      <div class="eq-bar"></div>
-      <div class="eq-bar"></div>
-      <div class="eq-bar"></div>
-      <div class="eq-bar"></div>
-      <div class="eq-bar"></div>
-    </div>
-  </div>
+
 </div>
 
 <!-- Family Feud Rules -->
@@ -370,17 +304,12 @@ footer {
 </div>
 
 <div class="divider" style="position:relative;z-index:2;margin-bottom:0">✦ ✦ ✦</div>
-<footer>👑 Tri-Wizard Tournament 2025 · All Rights Reserved</footer>
+<footer>🏆 Triwizard Tournament 2025 · All Rights Reserved</footer>
 
 <!-- Gyro permission note for iOS -->
 <div id="gyroNote">Tap to enable gem motion ✦</div>
 
 <!-- Audio -->
-<audio id="bgMusic" loop>
-  <!-- Upbeat carnival/royalty music from Pixabay -->
-  <source src="https://cdn.pixabay.com/download/audio/2022/10/25/audio_6c1e3e6f14.mp3" type="audio/mpeg">
-  <source src="https://cdn.pixabay.com/download/audio/2021/09/06/audio_b8b9e7fe4f.mp3" type="audio/mpeg">
-</audio>
 <audio id="clickSound">
   <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_8a4f85e51d.mp3?filename=click-124467.mp3" type="audio/mpeg">
 </audio>
@@ -687,21 +616,6 @@ footer {
 /* ═══════════════════════════════════════
    3. MUSIC & UI
 ═══════════════════════════════════════ */
-function toggleMusic() {
-  const music = document.getElementById('bgMusic');
-  const btn   = document.getElementById('musicBtn');
-  const eq    = document.getElementById('eq');
-  if (music.paused) {
-    music.play().catch(() => {});
-    btn.textContent = '⏸ Pause Music';
-    eq.classList.remove('paused');
-  } else {
-    music.pause();
-    btn.textContent = '▶ Play Music';
-    eq.classList.add('paused');
-  }
-}
-
 function toggleSection(id, btn) {
   const el = document.getElementById(id);
   el.classList.toggle('hidden');

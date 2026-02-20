@@ -1,28 +1,714 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instincts'26</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tri-Wizard Tournament  - Family Feud & Green Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #FFD700;
+  --deep-gold: #B8860B;
+  --crimson: #8B0000;
+  --dark: #0a0005;
+  --magenta: #ff006e;
+  --purple: #4a0050;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Cormorant Garamond', serif;
+  background: radial-gradient(ellipse at 50% 0%, #3d0010 0%, #1a0008 40%, #0a0005 100%);
+  color: var(--gold);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ── GEM CANVAS (gyro layer) ── */
+#gemCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── THREE.JS canvas pushed to bg ── */
+canvas.three-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 0;
+  opacity: 0.85;
+}
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 50px 20px 20px;
+}
+
+.crown-stage {
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 20px;
+  position: relative;
+}
+
+#threeCanvas {
+  width: 220px !important;
+  height: 220px !important;
+  border-radius: 50%;
+  box-shadow: 0 0 60px rgba(255,215,0,0.5);
+}
+
+.title {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: clamp(1.8rem, 6vw, 3.2rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, #fff8dc, #FFD700, #B8860B, #FFD700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 12px rgba(255,215,0,0.6));
+  animation: shimmer 3s ease-in-out infinite alternate;
+  letter-spacing: 2px;
+}
+
+@keyframes shimmer {
+  from { filter: drop-shadow(0 0 8px rgba(255,215,0,0.4)); }
+  to   { filter: drop-shadow(0 0 24px rgba(255,165,0,0.9)); }
+}
+
+.subtitle {
+  font-size: clamp(0.9rem, 3vw, 1.3rem);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #ffcf77;
+  margin-top: 6px;
+  opacity: 0.85;
+}
+
+/* ── MUSIC CONTROLS ── */
+.music-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 18px auto;
+  z-index: 2;
+  position: relative;
+}
+
+.music-btn {
+  background: linear-gradient(135deg, #FFD700, #B8860B);
+  color: #1a0008;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 40px;
+  cursor: pointer;
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+  box-shadow: 0 0 20px rgba(255,215,0,0.4);
+}
+
+.music-btn:hover {
+  background: linear-gradient(135deg, #fff59d, #FFD700);
+  transform: scale(1.07);
+  box-shadow: 0 0 35px rgba(255,215,0,0.7);
+}
+
+.equalizer {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 24px;
+}
+.eq-bar {
+  width: 4px;
+  background: var(--gold);
+  border-radius: 2px;
+  animation: eqAnim 0.6s ease-in-out infinite alternate;
+  transform-origin: bottom;
+}
+.eq-bar:nth-child(1) { height: 10px; animation-delay: 0s; }
+.eq-bar:nth-child(2) { height: 18px; animation-delay: 0.1s; }
+.eq-bar:nth-child(3) { height: 12px; animation-delay: 0.2s; }
+.eq-bar:nth-child(4) { height: 22px; animation-delay: 0.15s; }
+.eq-bar:nth-child(5) { height: 8px;  animation-delay: 0.05s; }
+
+@keyframes eqAnim {
+  from { transform: scaleY(0.3); }
+  to   { transform: scaleY(1); }
+}
+.equalizer.paused .eq-bar { animation-play-state: paused; transform: scaleY(0.3); }
+
+/* ── DECORATIVE DIVIDER ── */
+.divider {
+  text-align: center;
+  font-size: 1.4rem;
+  letter-spacing: 12px;
+  margin: 10px 0;
+  color: var(--deep-gold);
+  opacity: 0.7;
+}
+
+/* ── SECTIONS ── */
+.section {
+  position: relative;
+  z-index: 2;
+  margin: 28px auto;
+  width: 92%;
+  max-width: 760px;
+  background: linear-gradient(135deg, rgba(80,0,20,0.55), rgba(10,0,5,0.8));
+  padding: 24px 28px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,215,0,0.35);
+  box-shadow: 0 0 30px rgba(255,215,0,0.1), inset 0 0 60px rgba(139,0,0,0.1);
+  backdrop-filter: blur(6px);
+}
+
+.section::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255,215,0,0.3), transparent 50%, rgba(255,100,0,0.2));
+  pointer-events: none;
+  z-index: -1;
+}
+
+.section h2 {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: clamp(1rem, 3.5vw, 1.4rem);
+  text-align: center;
+  margin-bottom: 14px;
+  color: #FFD700;
+  text-shadow: 0 0 12px rgba(255,215,0,0.5);
+}
+
+/* Toggle button */
+.toggle-btn {
+  display: block;
+  margin: 0 auto 10px;
+  background: transparent;
+  color: var(--gold);
+  border: 1.5px solid var(--gold);
+  padding: 8px 22px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+}
+.toggle-btn:hover {
+  background: rgba(255,215,0,0.15);
+  box-shadow: 0 0 20px rgba(255,215,0,0.3);
+  transform: scale(1.04);
+}
+
+/* Rules list */
+.rules-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+.rules-list li {
+  padding: 10px 0 10px 24px;
+  border-bottom: 1px solid rgba(255,215,0,0.1);
+  position: relative;
+  font-size: 1.05rem;
+  color: #fde8a0;
+  line-height: 1.5;
+}
+.rules-list li::before {
+  content: '♦';
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+  font-size: 0.7rem;
+  top: 13px;
+}
+.rules-list li:last-child { border-bottom: none; }
+
+.hidden { display: none; }
+
+/* ── CONTACT ── */
+.contact {
+  text-align: center;
+  padding: 20px;
+}
+.contact-card {
+  display: inline-block;
+  margin: 8px 10px;
+  background: rgba(255,215,0,0.08);
+  border: 1px solid rgba(255,215,0,0.3);
+  border-radius: 14px;
+  padding: 12px 24px;
+}
+.contact-card strong {
+  display: block;
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: 0.85rem;
+  color: #FFD700;
+  margin-bottom: 4px;
+}
+.contact-card span { font-size: 1.05rem; color: #fde8a0; }
+
+/* ── GYRO PERMISSION NOTE ── */
+#gyroNote {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: rgba(10,0,5,0.9);
+  border: 1px solid rgba(255,215,0,0.4);
+  border-radius: 40px;
+  padding: 8px 20px;
+  font-size: 0.78rem;
+  color: #fde8a0;
+  text-align: center;
+  display: none;
+}
+
+/* ── FOOTER ── */
+footer {
+  text-align: center;
+  padding: 30px 20px;
+  position: relative;
+  z-index: 2;
+  font-size: 0.85rem;
+  color: rgba(255,215,0,0.4);
+  letter-spacing: 2px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0005; }
+::-webkit-scrollbar-thumb { background: var(--deep-gold); border-radius: 10px; }
+</style>
 </head>
 <body>
-    <header>
-        <h1>Instincts'26</h1>
-    </header>
-    <main>
-        <section id="contact">
-            <h2>Contact Us</h2>
-            <!-- Contact form goes here -->
-        </section>
-        <section id="family-feud-rules">
-            <h2>Family Feud Rules</h2>
-            <!-- Family feud rules content goes here -->
-        </section>
-        <!-- Removed music bar section -->
-    </main>
-    <footer>
-        <p>&copy; 2026 Instincts</p>
-    </footer>
+
+<!-- Gyroscope gem canvas -->
+<canvas id="gemCanvas"></canvas>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="crown-stage">
+    <canvas id="threeCanvas"></canvas>
+  </div>
+
+  <h1 class="title">Regal Carnival</h1>
+  <p class="subtitle">Family Feud &amp; Green Screen</p>
+
+  <div class="divider">✦ ✦ ✦</div>
+
+  <div class="music-bar">
+    <button class="music-btn" onclick="toggleMusic()" id="musicBtn">▶ Play Music</button>
+    <div class="equalizer paused" id="eq">
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Family Feud Rules -->
+<div class="section">
+  <h2>🎭 Family Feud Rules</h2>
+  <button class="toggle-btn" onclick="toggleSection('ff', this)">View Rules ▾</button>
+  <div id="ff" class="hidden">
+    <ul class="rules-list">
+      <li>Two teams of 4 players each.</li>
+      <li>Teams decide player order before the game starts.</li>
+      <li>Each round begins with a Face-Off between one player per team.</li>
+      <li>Three survey questions are asked per face-off.</li>
+      <li>Points are awarded based on survey popularity rankings.</li>
+      <li>The team with the highest total score at the end wins.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Green Screen Rules -->
+<div class="section">
+  <h2>🎬 Green Screen Rules</h2>
+  <button class="toggle-btn" onclick="toggleSection('gs', this)">View Rules ▾</button>
+  <div id="gs" class="hidden">
+    <ul class="rules-list">
+      <li>Each member participates individually; scores are combined for team total.</li>
+      <li>Participants are blindfolded throughout their turn.</li>
+      <li>A muted clip plays in the background for the audience.</li>
+      <li>Judges provide verbal clues to guide the participant.</li>
+      <li>Each participant gets 3 minutes to perform.</li>
+      <li>Judges' decisions are final and binding.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Contact -->
+<div class="section contact">
+  <h2>📞 Points of Contact</h2>
+  <div class="contact-card">
+    <strong>Malini D</strong>
+    <span>9500512512</span>
+  </div>
+  <div class="contact-card">
+    <strong>Sowmiya D</strong>
+    <span>9597593013</span>
+  </div>
+</div>
+
+<div class="divider" style="position:relative;z-index:2;margin-bottom:0">✦ ✦ ✦</div>
+<footer>👑 Regal Carnival 2025 · All Rights Reserved</footer>
+
+<!-- Gyro permission note for iOS -->
+<div id="gyroNote">Tap to enable gem motion ✦</div>
+
+<!-- Audio -->
+<audio id="bgMusic" loop>
+  <!-- Upbeat carnival/royalty music from Pixabay -->
+  <source src="https://cdn.pixabay.com/download/audio/2022/10/25/audio_6c1e3e6f14.mp3" type="audio/mpeg">
+  <source src="https://cdn.pixabay.com/download/audio/2021/09/06/audio_b8b9e7fe4f.mp3" type="audio/mpeg">
+</audio>
+<audio id="clickSound">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_8a4f85e51d.mp3?filename=click-124467.mp3" type="audio/mpeg">
+</audio>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ═══════════════════════════════════════
+   1. THREE.JS – ROYAL CROWN SCENE
+═══════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('threeCanvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(220, 220);
+  renderer.setPixelRatio(window.devicePixelRatio);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+  camera.position.set(0, 1, 8);
+
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0xffd700, 0.5);
+  scene.add(ambientLight);
+
+  const pointLight1 = new THREE.PointLight(0xffd700, 2, 50);
+  pointLight1.position.set(5, 5, 5);
+  scene.add(pointLight1);
+
+  const pointLight2 = new THREE.PointLight(0xff4400, 1.5, 30);
+  pointLight2.position.set(-5, -3, 3);
+  scene.add(pointLight2);
+
+  const rimLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  rimLight.position.set(0, 10, -5);
+  scene.add(rimLight);
+
+  // ── CROWN GROUP ──
+  const crownGroup = new THREE.Group();
+  scene.add(crownGroup);
+
+  const goldMat = new THREE.MeshStandardMaterial({
+    color: 0xFFD700,
+    metalness: 0.9,
+    roughness: 0.15,
+    envMapIntensity: 1.0
+  });
+
+  const darkGoldMat = new THREE.MeshStandardMaterial({
+    color: 0xB8860B,
+    metalness: 1.0,
+    roughness: 0.1
+  });
+
+  // Crown base band (torus)
+  const bandGeo = new THREE.TorusGeometry(1.8, 0.22, 16, 80);
+  const band = new THREE.Mesh(bandGeo, goldMat);
+  band.rotation.x = Math.PI / 2;
+  crownGroup.add(band);
+
+  // Crown spikes (5 spikes)
+  const numSpikes = 5;
+  for (let i = 0; i < numSpikes; i++) {
+    const angle = (i / numSpikes) * Math.PI * 2;
+    const spikeGroup = new THREE.Group();
+
+    // Spike height varies: alternating tall-short-tall
+    const isTall = (i % 2 === 0);
+    const spikeH = isTall ? 2.2 : 1.3;
+
+    const spikeGeo = new THREE.ConeGeometry(0.18, spikeH, 6);
+    const spike = new THREE.Mesh(spikeGeo, goldMat);
+    spike.position.y = spikeH / 2 + 0.18;
+
+    spikeGroup.add(spike);
+
+    // Gemstone on top
+    const gemColors = [0xff0033, 0x0044ff, 0x00cc44, 0xff6600, 0xcc00ff];
+    const gemGeo = new THREE.OctahedronGeometry(isTall ? 0.22 : 0.16);
+    const gemMat = new THREE.MeshStandardMaterial({
+      color: gemColors[i],
+      metalness: 0.0,
+      roughness: 0.05,
+      transparent: true,
+      opacity: 0.92,
+      emissive: gemColors[i],
+      emissiveIntensity: 0.4
+    });
+    const gem = new THREE.Mesh(gemGeo, gemMat);
+    gem.position.y = spikeH + 0.3;
+    spikeGroup.add(gem);
+
+    spikeGroup.position.set(
+      Math.cos(angle) * 1.8,
+      0,
+      Math.sin(angle) * 1.8
+    );
+    crownGroup.add(spikeGroup);
+  }
+
+  // Crown body (cylinder shell)
+  const bodyGeo = new THREE.CylinderGeometry(1.9, 1.6, 0.7, 60, 1, true);
+  const body = new THREE.Mesh(bodyGeo, goldMat);
+  body.position.y = -0.12;
+  crownGroup.add(body);
+
+  // Decorative lower ring
+  const lowerRingGeo = new THREE.TorusGeometry(1.72, 0.1, 8, 60);
+  const lowerRing = new THREE.Mesh(lowerRingGeo, darkGoldMat);
+  lowerRing.rotation.x = Math.PI / 2;
+  lowerRing.position.y = -0.45;
+  crownGroup.add(lowerRing);
+
+  // Floating orbit gems
+  const orbitGems = [];
+  const orbitGemColors = [0xff0033, 0x00cfff, 0xffdd00, 0xff6600, 0xcc00ff, 0x00ff88];
+  for (let i = 0; i < 6; i++) {
+    const g = new THREE.OctahedronGeometry(0.12);
+    const m = new THREE.MeshStandardMaterial({
+      color: orbitGemColors[i],
+      emissive: orbitGemColors[i],
+      emissiveIntensity: 0.7,
+      roughness: 0.05,
+      metalness: 0.1
+    });
+    const mesh = new THREE.Mesh(g, m);
+    orbitGems.push({ mesh, offset: (i / 6) * Math.PI * 2, speed: 0.5 + i * 0.07, radius: 2.8 + (i % 2) * 0.4 });
+    scene.add(mesh);
+  }
+
+  // Stars / sparkles
+  const starGeometry = new THREE.BufferGeometry();
+  const starPositions = [];
+  for (let i = 0; i < 200; i++) {
+    starPositions.push((Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20);
+  }
+  starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+  const starMat = new THREE.PointsMaterial({ color: 0xffd700, size: 0.06, transparent: true, opacity: 0.8 });
+  const stars = new THREE.Points(starGeometry, starMat);
+  scene.add(stars);
+
+  let t = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    t += 0.016;
+
+    crownGroup.rotation.y = t * 0.5;
+    crownGroup.position.y = Math.sin(t * 0.8) * 0.15;
+
+    orbitGems.forEach(og => {
+      const angle = og.offset + t * og.speed;
+      og.mesh.position.set(Math.cos(angle) * og.radius, Math.sin(t * 0.6 + og.offset) * 0.5, Math.sin(angle) * og.radius);
+      og.mesh.rotation.x += 0.03;
+      og.mesh.rotation.y += 0.05;
+    });
+
+    stars.rotation.y += 0.001;
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+
+
+/* ═══════════════════════════════════════
+   2. GYROSCOPE – GEM PARTICLES
+═══════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('gemCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const GEM_COLORS = ['#ff003380','#ffd70099','#ff660099','#cc00ff80','#00cfff80','#00ff8880'];
+  const SHAPES = ['diamond', 'star', 'circle'];
+
+  function randomGem() {
+    return {
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: 6 + Math.random() * 14,
+      color: GEM_COLORS[Math.floor(Math.random() * GEM_COLORS.length)],
+      shape: SHAPES[Math.floor(Math.random() * SHAPES.length)],
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      spin: (Math.random() - 0.5) * 0.04,
+      angle: Math.random() * Math.PI * 2,
+      gx: 0, gy: 0 // gyro-driven velocity
+    };
+  }
+
+  const gems = Array.from({ length: 60 }, randomGem);
+
+  // Gyroscope / orientation
+  let gyroBeta = 0, gyroGamma = 0;
+  let gyroAvailable = false;
+
+  function handleOrientation(e) {
+    gyroAvailable = true;
+    gyroBeta  = (e.beta  || 0) / 90;   // -1 to 1
+    gyroGamma = (e.gamma || 0) / 90;   // -1 to 1
+    document.getElementById('gyroNote').style.display = 'none';
+  }
+
+  // iOS 13+ requires permission
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    const note = document.getElementById('gyroNote');
+    note.style.display = 'block';
+    note.addEventListener('click', () => {
+      DeviceOrientationEvent.requestPermission().then(state => {
+        if (state === 'granted') {
+          window.addEventListener('deviceorientation', handleOrientation);
+          note.style.display = 'none';
+        }
+      });
+    });
+  } else {
+    window.addEventListener('deviceorientation', handleOrientation);
+  }
+
+  function drawDiamond(ctx, x, y, size, angle) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(size * 0.55, 0);
+    ctx.lineTo(0, size);
+    ctx.lineTo(-size * 0.55, 0);
+    ctx.closePath();
+    ctx.restore();
+  }
+
+  function drawStar(ctx, x, y, size, angle, pts = 4) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.beginPath();
+    for (let i = 0; i < pts * 2; i++) {
+      const r = i % 2 === 0 ? size : size * 0.4;
+      const a = (i / (pts * 2)) * Math.PI * 2 - Math.PI / 2;
+      i === 0 ? ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r) : ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+    }
+    ctx.closePath();
+    ctx.restore();
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const gravX = gyroAvailable ? gyroGamma * 0.8 : 0;
+    const gravY = gyroAvailable ? gyroBeta  * 0.8 : 0;
+
+    gems.forEach(g => {
+      // Apply gyro gravity
+      g.vx += gravX * 0.04;
+      g.vy += gravY * 0.04;
+
+      // Damping
+      g.vx *= 0.97;
+      g.vy *= 0.97;
+
+      g.x += g.vx;
+      g.y += g.vy;
+      g.angle += g.spin;
+
+      // Wrap edges
+      if (g.x < -20) g.x = canvas.width + 20;
+      if (g.x > canvas.width + 20) g.x = -20;
+      if (g.y < -20) g.y = canvas.height + 20;
+      if (g.y > canvas.height + 20) g.y = -20;
+
+      ctx.fillStyle = g.color;
+      ctx.strokeStyle = 'rgba(255,215,0,0.4)';
+      ctx.lineWidth = 0.8;
+
+      if (g.shape === 'diamond') {
+        drawDiamond(ctx, g.x, g.y, g.size, g.angle);
+      } else if (g.shape === 'star') {
+        drawStar(ctx, g.x, g.y, g.size, g.angle);
+      } else {
+        ctx.beginPath();
+        ctx.arc(g.x, g.y, g.size * 0.6, 0, Math.PI * 2);
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      // Sparkle highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.beginPath();
+      ctx.arc(g.x - g.size * 0.2, g.y - g.size * 0.2, g.size * 0.18, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+
+/* ═══════════════════════════════════════
+   3. MUSIC & UI
+═══════════════════════════════════════ */
+function toggleMusic() {
+  const music = document.getElementById('bgMusic');
+  const btn   = document.getElementById('musicBtn');
+  const eq    = document.getElementById('eq');
+  if (music.paused) {
+    music.play().catch(() => {});
+    btn.textContent = '⏸ Pause Music';
+    eq.classList.remove('paused');
+  } else {
+    music.pause();
+    btn.textContent = '▶ Play Music';
+    eq.classList.add('paused');
+  }
+}
+
+function toggleSection(id, btn) {
+  const el = document.getElementById(id);
+  el.classList.toggle('hidden');
+  btn.textContent = el.classList.contains('hidden') ? 'View Rules ▾' : 'Hide Rules ▴';
+  const click = document.getElementById('clickSound');
+  if (click) { click.currentTime = 0; click.play().catch(() => {}); }
+}
+</script>
 </body>
 </html>
